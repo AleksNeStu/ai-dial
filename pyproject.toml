@@ -12,6 +12,7 @@ requests = "2.32.3"
 openai = "1.43.0"
 langchain-openai = "0.1.23"
 aidial-sdk = ">=0.2"
+python-dotenv = "^1.0.1"
 
 
 [build-system]
