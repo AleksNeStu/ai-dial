@@ -2,9 +2,9 @@
   "routes": {},
   "applications": {
     "echo": {
-      "displayName": "My Echo App",
-      "description": "Simple application that repeats user's message",
-      "endpoint": "http://echo:5000/openai/deployments/echo/chat/completions"
+      "displayName": "AI POC App",
+      "description": "AI POC App: translate from english to polish",
+      "endpoint": "http://172.17.0.1:5001/openai/deployments/echo/chat/completions"
     }
   },
   "models": {},

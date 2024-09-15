@@ -6,6 +6,11 @@
 
 * [Scripts](script)
 
+* [Run poc demo app](script%2Fpoc_app.run)
+```sh
+cd script && sh ./poc_app_run.sh
+```
+
 
 
 ## Project Overview and Contribution Guide

@@ -32,7 +32,12 @@ Change cfg [config.json](dial-docker-compose%2Fapplication%2Fcore%2Fconfig.json)
 cd dial-docker-compose/application && docker-compose restart core
 ```
 
-host.docker.internal:5001 is same 172.17.0.1
+c) Get ip for docker and dial-docker-compose/application/core/config.json
+```sh
+# host.docker.internal:5001 is same 172.17.0.1
+IP_ADDRESS=$(ip addr show | grep "\binet\b.*\bdocker0\b" | awk '{print $2}' | cut -d '/' -f 1)
+echo $IP_ADDRESS
+```
 
 
 3) Submodule
