@@ -1,0 +1,113 @@
+[tool.poetry]
+name = "aidial-sdk"
+version = "0.13.0rc"
+description = "Framework to create applications and model adapters for AI DIAL"
+authors = ["EPAM RAIL <SpecialEPM-DIALDevTeam@epam.com>"]
+homepage = "https://epam-rail.com"
+license = "Apache-2.0"
+readme = "README.md"
+repository = "https://github.com/epam/ai-dial-sdk"
+
+[tool.poetry.dependencies]
+python = ">=3.8.1,<4.0"
+fastapi = ">=0.51,<1.0"
+uvicorn = ">=0.19,<1.0"
+pydantic = ">=1.10,<3"
+requests = "^2.19"
+wrapt = "^1.14"
+aiohttp = "^3.8.3"
+httpx = ">=0.25.0,<1.0"
+opentelemetry-sdk = {version = "1.20.0", optional = true}
+opentelemetry-api = {version = "1.20.0", optional = true}
+opentelemetry-exporter-otlp-proto-grpc = {version = "1.20.0", optional = true}
+opentelemetry-distro ={version =  "0.41b0", optional = true}
+opentelemetry-instrumentation = {version = "0.41b0", optional = true}
+opentelemetry-instrumentation-aiohttp-client = {version = "0.41b0", optional = true}
+opentelemetry-instrumentation-fastapi = {version = "0.41b0", optional = true}
+opentelemetry-instrumentation-httpx = {version = "0.41b0", optional = true}
+opentelemetry-instrumentation-logging = {version = "0.41b0", optional = true}
+opentelemetry-instrumentation-requests = {version = "0.41b0", optional = true}
+opentelemetry-instrumentation-system-metrics = {version = "0.41b0", optional = true}
+opentelemetry-instrumentation-urllib = {version = "0.41b0", optional = true}
+opentelemetry-exporter-prometheus = {version = "0.41b0", optional = true}
+prometheus-client = {version = "0.17.1", optional = true}
+
+[tool.poetry.extras]
+telemetry = [
+    "opentelemetry-sdk",
+    "opentelemetry-api",
+    "opentelemetry-exporter-otlp-proto-grpc",
+    "opentelemetry-distro",
+    "opentelemetry-instrumentation",
+    "opentelemetry-instrumentation-aiohttp-client",
+    "opentelemetry-instrumentation-fastapi",
+    "opentelemetry-instrumentation-httpx",
+    "opentelemetry-instrumentation-logging",
+    "opentelemetry-instrumentation-requests",
+    "opentelemetry-instrumentation-system-metrics",
+    "opentelemetry-instrumentation-urllib",
+    "opentelemetry-exporter-prometheus",
+    "prometheus-client",
+]
+
+[tool.poetry.group.test.dependencies]
+pytest = "^7.4.2"
+nox = "^2023.4.22"
+pillow = "^10.2.0"
+respx = "^0.21.1"
+aioresponses = "^0.7.6"
+responses = "^0.25.3"
+
+[tool.poetry.group.lint.dependencies]
+flake8 = "^6.0.0"
+black = ">=23.3,<25.0"
+isort = "^5.12.0"
+pyright = "^1.1.324"
+autoflake = "^2.2.0"
+
+[tool.pytest.ini_options]
+testpaths = [
+    "tests"
+]
+
+[tool.pyright]
+typeCheckingMode = "basic"
+reportUnusedVariable = "error"
+reportIncompatibleMethodOverride = "error"
+exclude = [
+    ".git",
+    "**/.venv",
+    ".nox",
+    ".pytest_cache",
+    "**/__pycache__",
+    "build",
+    "examples/langchain_rag"
+]
+
+[tool.black]
+line-length = 80
+exclude = '''
+/(
+    \.git
+  | \.venv
+  | \.nox
+  | \.pytest_cache
+  | \.__pycache__
+)/
+'''
+
+[tool.isort]
+line_length = 80
+profile = "black"
+
+[tool.autoflake]
+ignore_init_module_imports = true
+remove_all_unused_imports = true
+in_place = true
+recursive = true
+quiet = true
+exclude = [
+    ".nox",
+    ".pytest_cache",
+    "\\.venv"
+]
