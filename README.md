@@ -1,5 +1,8 @@
 # AI DIAL Documentation
 
+## Dev documentation
+[README_DEV](README_DEV.md)
+
 ## Project Overview and Contribution Guide
 
 * [Contribution Guide](/CONTRIBUTING.md)
