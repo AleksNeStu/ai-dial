@@ -2,12 +2,14 @@
 A DIAL application which returns back the content and attachments
 from the last user message.
 """
-
 import uvicorn
-
 from aidial_sdk import DIALApp
+
 from aidial_sdk.chat_completion import ChatCompletion, Request, Response
 
+from common.cfg import *
+
+print(OPENAI_API_KEY)
 
 # ChatCompletion is an abstract class for applications and model adapters
 class EchoApplication(ChatCompletion):
