@@ -3,6 +3,25 @@
 ## Dev documentation
 [README_DEV](README_DEV.md)
 
+1) Run ai-dial app via docker compose (used docker desktop)\
+[run_dial_app.sh](run_dial_app.sh)
+```sh
+sh ./run_dial_app.sh
+```
+http://localhost:3000/
+
+2) Run dial-sdk apps locally
+```sh
+# kill run uvicorn app in port 5000
+lsof -ti:5000 | xargs kill -9
+```
+[run_sdk_echo.sh](run_sdk_echo.sh)
+```sh
+sh ./run_sdk_echo.sh
+```
+http://0.0.0.0:5000
+
+
 ## Project Overview and Contribution Guide
 
 * [Contribution Guide](/CONTRIBUTING.md)
