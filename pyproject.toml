@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "ai-dial"
+version = "0.1.0"
+description = ""
+authors = ["Your Name <you@example.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+requests = "2.32.3"
+openai = "1.43.0"
+langchain-openai = "0.1.23"
+aidial-sdk = ">=0.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
