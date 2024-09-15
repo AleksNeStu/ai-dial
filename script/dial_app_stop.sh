@@ -1,0 +1,1 @@
+cd ../dial-docker-compose/application && docker-compose stop

@@ -18,13 +18,22 @@ b) Install
 poetry install --no-root 
 ```
 
-2) Run app in docker desktop
+2) App in docker desktop
+a) Run app
 ```sh
 cd dial-docker-compose/application && docker-compose up -d --build --force-recreate
 ```
 -d : Detached mode, runs containers in the background.\
 --build : Builds images before starting containers.\
 --force-recreate : Recreates containers even if their configuration and image haven't changed.\
+b) Restart app
+Change cfg [config.json](dial-docker-compose%2Fapplication%2Fcore%2Fconfig.json)
+```sh
+cd dial-docker-compose/application && docker-compose restart core
+```
+
+host.docker.internal:5001 is same 172.17.0.1
+
 
 3) Submodule
 a) Add submodule

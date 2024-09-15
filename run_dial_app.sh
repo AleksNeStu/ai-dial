@@ -1,1 +1,0 @@
-cd dial-docker-compose/application && docker-compose up -d --build --force-recreate
