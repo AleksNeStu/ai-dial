@@ -18,6 +18,11 @@ b) Install
 poetry install --no-root 
 ```
 
+c) Add pip requirements to poetry
+```sh
+poetry add $(cat dial-sdk/examples/langchain_rag/requirements.txt)
+```
+
 2) App in docker desktop
 a) Run app
 ```sh
