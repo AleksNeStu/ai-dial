@@ -33,6 +33,8 @@ __pycache__
 # IDE
 /.idea/
 /.vscode/
+.idea/
+.vscode/
 
 # Local dev files
 ~*
