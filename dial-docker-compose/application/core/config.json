@@ -2,9 +2,10 @@
   "routes": {},
   "applications": {
     "echo": {
-      "displayName": "AI POC App",
-      "description": "AI POC App: translate from english to polish",
-      "endpoint": "http://172.17.0.1:5001/openai/deployments/echo/chat/completions"
+      "displayName": "AI Assistant",
+      "description": "AI POC App: Recommendation system based on GenAI",
+      "endpoint": "http://172.17.0.1:5002/openai/deployments/echo/chat/completions",
+      "inputAttachmentTypes": ["*/*"]
     }
   },
   "models": {},

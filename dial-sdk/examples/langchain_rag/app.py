@@ -1,8 +1,6 @@
 """
 A simple RAG application based on LangChain.
 """
-
-import os
 from urllib.parse import urljoin
 from uuid import uuid4
 
@@ -12,15 +10,17 @@ from langchain.chains.retrieval_qa.base import RetrievalQA
 from langchain.embeddings import CacheBackedEmbeddings
 from langchain.globals import set_debug
 from langchain.storage import LocalFileStore
+from langchain_community.chat_models import ChatOpenAI
 from langchain_community.document_loaders import PyPDFLoader, WebBaseLoader
+from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
-from langchain_openai import AzureChatOpenAI, AzureOpenAIEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
-from utils import get_last_attachment_url, sanitize_namespace
 
 from aidial_sdk import DIALApp
 from aidial_sdk import HTTPException as DIALException
 from aidial_sdk.chat_completion import ChatCompletion, Choice, Request, Response
+from common.cfg import *
+from utils import get_last_attachment_url, sanitize_namespace
 
 
 def get_env(name: str) -> str:
@@ -37,6 +37,8 @@ API_VERSION = os.getenv("API_VERSION", "2024-02-01")
 LANGCHAIN_DEBUG = os.getenv("LANGCHAIN_DEBUG", "false").lower() == "true"
 
 set_debug(LANGCHAIN_DEBUG)
+
+CONTENT_URL = "https://github.com/ozlerhakan/mongodb-json-files/blob/master/datasets/books.json"
 
 text_splitter = RecursiveCharacterTextSplitter.from_tiktoken_encoder(
     chunk_size=256, chunk_overlap=0
@@ -55,7 +57,7 @@ class CustomCallbackHandler(AsyncCallbackHandler):
 
 class SimpleRAGApplication(ChatCompletion):
     async def chat_completion(
-        self, request: Request, response: Response
+            self, request: Request, response: Response
     ) -> None:
         collection_name = str(uuid4())
 
@@ -84,7 +86,7 @@ class SimpleRAGApplication(ChatCompletion):
 
             # Show the user the total number of parts in the resource
             with choice.create_stage(
-                "Splitting the document into chunks"
+                    "Splitting the document into chunks"
             ) as stage:
                 texts = text_splitter.split_documents(documents)
                 stage.append_content(f"Total number of chunks: {len(texts)}")
@@ -92,17 +94,9 @@ class SimpleRAGApplication(ChatCompletion):
             # Show the user start of calculating embeddings stage
             with choice.create_stage("Calculating embeddings"):
 
-                openai_embedding = AzureOpenAIEmbeddings(
+                openai_embedding = OpenAIEmbeddings(
                     model=EMBEDDINGS_MODEL,
-                    azure_deployment=EMBEDDINGS_MODEL,
-                    azure_endpoint=DIAL_URL,
-                    # Header propagation automatically propagates the API key from the request headers.
-                    openai_api_key="-",
-                    openai_api_version=API_VERSION,
-                    # The check leads to tokenization of the input strings.
-                    # Tokenized input is only supported by OpenAI embedding models.
-                    # For other models, the check should be disabled.
-                    check_embedding_ctx_length=False,
+                    openai_api_key=get_env("OPENAI_API_KEY"),
                 )
 
                 embeddings = CacheBackedEmbeddings.from_bytes_store(
@@ -116,12 +110,9 @@ class SimpleRAGApplication(ChatCompletion):
                 )
 
             # CustomCallbackHandler allows to pass tokens to the users as they are generated, so as not to wait for a complete response.
-            llm = AzureChatOpenAI(
-                azure_deployment=CHAT_MODEL,
-                azure_endpoint=DIAL_URL,
-                # Header propagation automatically propagates the API key from the request headers.
-                openai_api_key="-",
-                openai_api_version=API_VERSION,
+            llm = ChatOpenAI(
+                model=CHAT_MODEL,
+                openai_api_key=get_env("OPENAI_API_KEY"),
                 temperature=0,
                 streaming=True,
                 callbacks=[CustomCallbackHandler(choice)],
@@ -141,8 +132,9 @@ class SimpleRAGApplication(ChatCompletion):
 
 
 app = DIALApp(DIAL_URL, propagate_auth_headers=True)
-app.add_chat_completion("simple-rag", SimpleRAGApplication())
+app.add_chat_completion("echo", SimpleRAGApplication())
 
 
 if __name__ == "__main__":
-    uvicorn.run(app, port=5000)
+    # uvicorn.run('app:app', host='0.0.0.0', port=5001, reload=True)
+    uvicorn.run(app, host='0.0.0.0', port=5002)
