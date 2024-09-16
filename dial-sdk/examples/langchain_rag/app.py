@@ -62,9 +62,14 @@ class SimpleRAGApplication(ChatCompletion):
         collection_name = str(uuid4())
 
         with response.create_single_choice() as choice:
-            message = request.messages[-1]
-            user_query = message.content or ""
+            # Step 1: Track User Query and Message History
+            user_query = request.messages[-1].content or ""
+            message_history = [msg.content for msg in request.messages[:-1]]
 
+            # Use message history to identify user preferences (e.g., genre, topic, etc.)
+            user_preferences = self.extract_preferences_from_history(message_history)
+
+            # Step 2: Load Document Content
             file_url = get_last_attachment_url(request.messages)
             file_abs_url = urljoin(f"{DIAL_URL}/v1/", file_url)
 
@@ -73,43 +78,53 @@ class SimpleRAGApplication(ChatCompletion):
             else:
                 loader = WebBaseLoader(file_abs_url)
 
-            # Create the download stage to show to the user the active process.
-            # After the loading is complete, the stage will auto finished.
-            with choice.create_stage("Downloading the document"):
+            with choice.create_stage("Downloading the document") as stage:
                 try:
                     documents = loader.load()
+                    stage.append_content("Document successfully downloaded.")
                 except Exception:
                     msg = "Error while loading the document. Please check that the URL you provided is correct."
                     raise DIALException(
                         status_code=400, message=msg, display_message=msg
                     )
 
-            # Show the user the total number of parts in the resource
-            with choice.create_stage(
-                    "Splitting the document into chunks"
-            ) as stage:
-                texts = text_splitter.split_documents(documents)
-                stage.append_content(f"Total number of chunks: {len(texts)}")
+            # Step 3: Extract Document Content (titles, summaries, genres)
+            with choice.create_stage("Analyzing document content") as stage:
+                book_details = self.extract_book_details(documents)
+                stage.append_content(f"Total number of books found: {len(book_details)}")
 
-            # Show the user start of calculating embeddings stage
-            with choice.create_stage("Calculating embeddings"):
+            # Step 4: Personalized Recommendations based on user history and document content
+            recommended_books = self.recommend_books(user_query, user_preferences, book_details)
 
+            # Structured response to show the recommendations
+            with choice.create_stage("Providing recommendations") as stage:
+                if recommended_books:
+                    stage.append_content("Based on your preferences and the document content, here are some recommendations:")
+                    for book in recommended_books:
+                        stage.append_content(f"- {book['title']}: {book['summary']}")
+                else:
+                    stage.append_content("I couldn't find any specific matches based on your query, but here are some popular options:")
+                    for book in book_details[:3]:  # Show a few random options if no exact match
+                        stage.append_content(f"- {book['title']}: {book['summary']}")
+
+            await response.aflush()
+
+            # Continue with LLM-powered QA processing using document search
+            texts = text_splitter.split_documents(documents)
+
+            with choice.create_stage("Calculating embeddings") as stage:
                 openai_embedding = OpenAIEmbeddings(
                     model=EMBEDDINGS_MODEL,
                     openai_api_key=get_env("OPENAI_API_KEY"),
                 )
-
                 embeddings = CacheBackedEmbeddings.from_bytes_store(
                     openai_embedding,
                     embedding_store,
                     namespace=sanitize_namespace(openai_embedding.model),
                 )
+                docsearch = Chroma.from_documents(texts, embeddings, collection_name=collection_name)
+                stage.append_content("Embeddings successfully calculated.")
 
-                docsearch = Chroma.from_documents(
-                    texts, embeddings, collection_name=collection_name
-                )
-
-            # CustomCallbackHandler allows to pass tokens to the users as they are generated, so as not to wait for a complete response.
             llm = ChatOpenAI(
                 model=CHAT_MODEL,
                 openai_api_key=get_env("OPENAI_API_KEY"),
@@ -129,6 +144,43 @@ class SimpleRAGApplication(ChatCompletion):
             await qa.ainvoke({"query": user_query})
 
             docsearch.delete_collection()
+
+    # Helper function to extract user preferences from history
+    def extract_preferences_from_history(self, message_history):
+        preferences = []
+        for msg in message_history:
+            if 'science fiction' in msg.lower():
+                preferences.append('science fiction')
+            elif 'fantasy' in msg.lower():
+                preferences.append('fantasy')
+            # Add more rules to detect other preferences (e.g., mystery, non-fiction, etc.)
+        return preferences
+
+    # Helper function to extract book details from loaded documents
+    def extract_book_details(self, documents):
+        book_details = []
+        for doc in documents:
+            # Access the text or other relevant attributes
+            title = getattr(doc, 'title', 'Untitled')  # Replace 'title' with appropriate attribute or method
+            summary = getattr(doc, 'summary', 'No summary available.')  # Replace 'summary' with appropriate attribute or method
+            if not title or not summary:
+                # If title or summary are not available, attempt to extract content
+                text = getattr(doc, 'text', 'No content available.')
+                title = 'Unknown Title'
+                summary = text[:500]  # Example: Take the first 500 characters as a summary
+            book_details.append({'title': title, 'summary': summary})
+        return book_details
+
+    # Helper function to recommend books based on query, user preferences, and document content
+    def recommend_books(self, query, preferences, book_details):
+        recommended = []
+        for book in book_details:
+            if any(pref in book['summary'].lower() for pref in preferences):
+                recommended.append(book)
+            elif query.lower() in book['title'].lower() or query.lower() in book['summary'].lower():
+                recommended.append(book)
+        return recommended
+
 
 
 app = DIALApp(DIAL_URL, propagate_auth_headers=True)
