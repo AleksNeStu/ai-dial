@@ -10,7 +10,10 @@
 ```sh
 cd script && sh ./poc_app_run.sh
 ```
-
+```sh
+google-chrome "http://localhost:3000"
+```
+[Chat App local](http://localhost:3000)
 
 
 ## Project Overview and Contribution Guide

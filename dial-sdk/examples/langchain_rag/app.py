@@ -12,11 +12,13 @@ from langchain_community.document_loaders import PyPDFLoader, WebBaseLoader
 from langchain_community.embeddings import OpenAIEmbeddings
 from langchain_community.vectorstores import Chroma
 from langchain_text_splitters import RecursiveCharacterTextSplitter
+
 from aidial_sdk import DIALApp
 from aidial_sdk import HTTPException as DIALException
 from aidial_sdk.chat_completion import ChatCompletion, Choice, Request, Response
 from common.cfg import *
-from utils import get_last_attachment_url, sanitize_namespace
+from .utils import get_last_attachment_url, sanitize_namespace
+
 
 def get_env(name: str) -> str:
     value = os.getenv(name)
